@@ -379,6 +379,47 @@ function App() {
         }
     };
 
+    // Render incoming call modal on ALL pages (not just home)
+    const incomingCallModal = incomingCall && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+                <div className="text-center mb-6">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <Phone className="w-10 h-10 text-green-600 animate-bounce" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Incoming {incomingCall.type === 'meeting' ? 'Meeting' : 'Call'}
+                    </h2>
+                    {incomingCall.type === 'meeting' && incomingCall.meetingTitle && (
+                        <p className="text-sm font-semibold text-blue-600 mb-2">
+                            {incomingCall.meetingTitle}
+                        </p>
+                    )}
+                    <p className="text-lg text-gray-600">
+                        {incomingCall.fromName} {incomingCall.type === 'meeting' ? 'invited you to a meeting' : 'is calling you'}...
+                    </p>
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleAcceptCall}
+                        className="flex-1 px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                        <Phone className="w-5 h-5" />
+                        Answer
+                    </button>
+                    <button
+                        onClick={handleRejectCall}
+                        className="flex-1 px-6 py-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                        <X className="w-5 h-5" />
+                        Decline
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
@@ -410,58 +451,73 @@ function App() {
 
     if (currentPage === 'meeting' && account) {
         return (
-            <MeetingRoom
-                account={account}
-                roomId={roomId}
-                onLeave={() => setCurrentPage('home')}
-            />
+            <>
+                <MeetingRoom
+                    account={account}
+                    roomId={roomId}
+                    onLeave={() => setCurrentPage('home')}
+                />
+                {incomingCallModal}
+            </>
         );
     }
 
     if (currentPage === 'users' && account) {
         return (
-            <UsersPage
-                account={account}
-                onBack={() => setCurrentPage('home')}
-                onCallUser={handleCallUser}
-                onMessageUser={handleMessageUser}
-            />
+            <>
+                <UsersPage
+                    account={account}
+                    onBack={() => setCurrentPage('home')}
+                    onCallUser={handleCallUser}
+                    onMessageUser={handleMessageUser}
+                />
+                {incomingCallModal}
+            </>
         );
     }
 
     if (currentPage === 'fileserver' && account) {
         return (
-            <FileServerPage
-                account={account}
-                onBack={() => setCurrentPage('home')}
-            />
+            <>
+                <FileServerPage
+                    account={account}
+                    onBack={() => setCurrentPage('home')}
+                />
+                {incomingCallModal}
+            </>
         );
     }
 
     if (currentPage === 'sharedwithme' && account) {
         return (
-            <SharedWithMePage
-                account={account}
-                onBack={() => setCurrentPage('home')}
-            />
+            <>
+                <SharedWithMePage
+                    account={account}
+                    onBack={() => setCurrentPage('home')}
+                />
+                {incomingCallModal}
+            </>
         );
     }
 
     if (currentPage === 'messages' && account && selectedUser) {
         return (
-            <MessagesPage
-                account={account}
-                targetUser={selectedUser}
-                onBack={() => setCurrentPage('users')}
-                onNewMessage={(from, message) => {
-                    addNotification({
-                        type: 'message',
-                        from: from,
-                        message: message,
-                        timestamp: Date.now()
-                    });
-                }}
-            />
+            <>
+                <MessagesPage
+                    account={account}
+                    targetUser={selectedUser}
+                    onBack={() => setCurrentPage('users')}
+                    onNewMessage={(from, message) => {
+                        addNotification({
+                            type: 'message',
+                            from: from,
+                            message: message,
+                            timestamp: Date.now()
+                        });
+                    }}
+                />
+                {incomingCallModal}
+            </>
         );
     }
 
@@ -481,46 +537,7 @@ function App() {
                     onClearAll={clearAllNotifications}
                     onAddNotification={addNotification}
                 />
-
-                {incomingCall && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-                            <div className="text-center mb-6">
-                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                                    <Phone className="w-10 h-10 text-green-600 animate-bounce" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                                    📞 Incoming {incomingCall.type === 'meeting' ? 'Meeting' : 'Call'}
-                                </h2>
-                                {incomingCall.type === 'meeting' && incomingCall.meetingTitle && (
-                                    <p className="text-sm font-semibold text-blue-600 mb-2">
-                                        {incomingCall.meetingTitle}
-                                    </p>
-                                )}
-                                <p className="text-lg text-gray-600">
-                                    {incomingCall.fromName} {incomingCall.type === 'meeting' ? 'invited you to a meeting' : 'is calling you'}...
-                                </p>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleAcceptCall}
-                                    className="flex-1 px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center gap-2"
-                                >
-                                    <Phone className="w-5 h-5" />
-                                    Answer
-                                </button>
-                                <button
-                                    onClick={handleRejectCall}
-                                    className="flex-1 px-6 py-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center gap-2"
-                                >
-                                    <X className="w-5 h-5" />
-                                    Decline
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {incomingCallModal}
             </>
         );
     }
